@@ -1,5 +1,7 @@
-import { Download, Play, FileText, Clock, Hash } from "lucide-react";
+import { useState } from "react";
+import { Download, Play, FileText, Clock, Hash, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { VideoPlayer } from "./VideoPlayer";
 
 export interface ClipData {
   id: number;
@@ -16,6 +18,9 @@ interface ClipCardProps {
 }
 
 export function ClipCard({ clip, index }: ClipCardProps) {
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [showSubtitle, setShowSubtitle] = useState(false);
+
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -27,6 +32,25 @@ export function ClipCard({ clip, index }: ClipCardProps) {
       className="clip-card opacity-0 animate-fade-in"
       style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* Video Player */}
+      {showPlayer && (
+        <div className="relative">
+          <VideoPlayer
+            startTime={clip.startTime}
+            endTime={clip.endTime}
+            duration={clip.duration}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background z-10"
+            onClick={() => setShowPlayer(false)}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-3">
@@ -36,9 +60,16 @@ export function ClipCard({ clip, index }: ClipCardProps) {
           <span className="font-mono text-sm font-medium">clip_{String(clip.id).padStart(3, "0")}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Play className="w-4 h-4" />
-          </Button>
+          {!showPlayer && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+              onClick={() => setShowPlayer(true)}
+            >
+              <Play className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -71,15 +102,29 @@ export function ClipCard({ clip, index }: ClipCardProps) {
           </span>
         </div>
 
-        {/* Subtitle Preview */}
-        <div className="p-3 rounded-lg bg-background border border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-            <FileText className="w-3 h-3" />
-            <span>Prévia da legenda</span>
-          </div>
-          <p className="text-sm leading-relaxed font-mono text-foreground/80">
-            {clip.subtitlePreview}
-          </p>
+        {/* Subtitle Preview - Collapsible */}
+        <div className="rounded-lg bg-background border border-border overflow-hidden">
+          <button
+            onClick={() => setShowSubtitle(!showSubtitle)}
+            className="w-full flex items-center justify-between p-3 text-xs text-muted-foreground hover:bg-secondary/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-3 h-3" />
+              <span>Prévia da legenda</span>
+            </div>
+            {showSubtitle ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
+          {showSubtitle && (
+            <div className="px-3 pb-3 animate-fade-in">
+              <p className="text-sm leading-relaxed font-mono text-foreground/80">
+                {clip.subtitlePreview}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
